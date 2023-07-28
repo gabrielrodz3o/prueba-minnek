@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Invertir Matriz con Caracteres Especiales</title>
+</head>
+<body>
+  <h1>Invertir Matriz con Caracteres Especiales</h1>
+  <p id="originalMatrix"></p>
+  <button onclick="invertMatrix()">Generar Nueva Matriz</button>
+  <p id="result"></p>
+
+  <script>
+  
+     const originalMatrix = ['n', '2', '&', 'a', 'l', '9', '$', 'q', '47', 'i', 'a', 'j', 'b', 'z', '%', '8'];
+
+ 
+    document.getElementById('originalMatrix').textContent = 'Matriz original: [' + originalMatrix.join(', ') + ']';
+
+    function invertMatrix() {
+
+      function invertMatrixWithSpecialChars(matrix) {
+        const specialCharPositions = [];
+        for (let i = 0; i < matrix.length; i++) {
+          if (!matrix[i].match(/^[a-zA-Z0-9]+$/)) {
+            specialCharPositions.push(i);
+          }
+        }
+
+        const invertedChars = matrix.filter((char) => char.match(/^[a-zA-Z0-9]+$/)).reverse();
+
+        specialCharPositions.forEach((pos, index) => {
+          invertedChars.splice(pos, 0, matrix[specialCharPositions[index]]);
+        });
+
+        return invertedChars;
+      }
+
+      const invertedMatrix = invertMatrixWithSpecialChars(originalMatrix);
+      document.getElementById('result').textContent = 'Nueva matriz: [' + invertedMatrix.join(', ') + ']';
+    }
+  </script>
+</body>
+</html>

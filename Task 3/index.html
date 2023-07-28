@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Products</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        overflow-x: hidden;
+      }
+
+      #addProductButton {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 5px;
+      }
+
+      dialog {
+        max-width: 400px;
+        padding: 20px;
+        border-radius: 5px;
+        background-color: #f5f5f5;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      dialog::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      dialog button {
+        margin-top: 10px;
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+
+      input[type="text"],
+      input[type="number"],
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+
+      textarea {
+        resize: vertical;
+      }
+
+      label {
+        display: block;
+        margin-top: 10px;
+        color: #333;
+      }
+
+      #productCarousel {
+        position: relative;
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        margin: 10px 0;
+        justify-content: center;
+        overflow-x: hidden;
+      }
+
+      .product-card {
+        flex: 0 0 calc(20% - 20px);
+        width: 290px;
+        margin-right: 10px;
+        scroll-snap-align: start;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+      }
+
+      .product-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+
+
+      .carousel-button {
+        position: absolute;
+        top: 35%;
+        transform: translateY(-50%);
+        padding: 5px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .prev {
+        left: 5px;
+
+      }
+
+      .next {
+        right: 5px;
+/
+      }
+    </style>
+  </head>
+
+  <body>
+  
+    <button id="addProductButton">Add Product</button>
+
+ 
+    <dialog id="addProductDialog">
+      <h2>add Product</h2>
+      <form id="productForm" action="#" method="POST">
+        <label for="productName">Name Product:</label>
+        <input type="text" id="productName" name="productName" required />
+
+        <label for="productPrice">Price:</label>
+        <input
+          type="number"
+          id="productPrice"
+          name="productPrice"
+          step="0.01"
+          required
+        />
+
+        <label for="productDescription">Desription:</label>
+        <textarea
+          id="productDescription"
+          name="productDescription"
+          required
+        ></textarea>
+
+        <label for="productImage">Image:</label>
+        <input
+          type="file"
+          id="productImage"
+          name="productImage"
+          accept="image/*"
+          required
+        />
+        <button type="submit" id="saveProductButton">Save</button>
+
+        <button type="button" id="closeDialogButton">Close</button>
+      </form>
+    </dialog>
+
+
+    <h2>Products</h2>
+    <div id="productCarousel" class="carousel">
+
+    </div>
+
+
+    <button class="carousel-button prev" onclick="scrollCarousel(-1)">◄</button>
+    <button class="carousel-button next" onclick="scrollCarousel(1)">►</button>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <script>
+      const addProductButton = document.getElementById("addProductButton");
+      const addProductDialog = document.getElementById("addProductDialog");
+      const closeDialogButton = document.getElementById("closeDialogButton");
+      const productForm = document.getElementById("productForm");
+      const productCarousel = document.getElementById("productCarousel");
+      const carousel = document.getElementById("productCarousel");
+
+      addProductButton.addEventListener("click", () => {
+        addProductDialog.showModal();
+      });
+
+      closeDialogButton.addEventListener("click", () => {
+        addProductDialog.close();
+      });
+      const { createClient } = supabase;
+      const supabaseUrl = "https://ozxyxxcrbuatwpnhgvke.supabase.co";
+      const supabaseKey =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96eHl4eGNyYnVhdHdwbmhndmtlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5MDU2NDI1MiwiZXhwIjoyMDA2MTQwMjUyfQ.2tznzLwvEOyNLUCzZq2c-1XGJbBFIS1etKHxchnzzF0";
+      const _supabase = createClient(supabaseUrl, supabaseKey);
+
+      function scrollCarousel(direction) {
+        const cardWidth =
+          carousel.querySelector(".product-card").offsetWidth + 20; 
+        carousel.scrollBy({
+          left: direction * cardWidth,
+          behavior: "smooth",
+        });
+      }
+      async function fetchProducts() {
+        const { data: products, error } = await _supabase
+          .from("products")
+          .select("*");
+        if (error) {
+          console.error("Error al obtener los productos:", error.message);
+          return;
+        }
+
+        productCarousel.innerHTML = "";
+        products.forEach(async (product) => {
+          const productCard = document.createElement("div");
+          productCard.classList.add("product-card");
+
+          const productImage = document.createElement("img");
+
+          const { data: image_url } = await _supabase.storage
+            .from("product_images")
+            .getPublicUrl(product.image_url);
+
+          productImage.src = image_url.publicUrl;
+          productImage.alt = product.name;
+          productCard.appendChild(productImage);
+
+          const productName = document.createElement("h3");
+          productName.textContent = product.name;
+          productCard.appendChild(productName);
+
+          const productPrice = document.createElement("p");
+          productPrice.textContent = `$${product.price.toFixed(2)}`;
+          productCard.appendChild(productPrice);
+
+          const productDescription = document.createElement("p");
+          productDescription.textContent = product.description;
+          productCard.appendChild(productDescription);
+
+          productCarousel.appendChild(productCard);
+        });
+      }
+      fetchProducts();
+      productForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const productName = document.getElementById("productName").value;
+        const productPrice = parseFloat(
+          document.getElementById("productPrice").value
+        );
+        const productDescription =
+          document.getElementById("productDescription").value;
+        const productImage = document.getElementById("productImage").files[0];
+
+        const spinner = document.createElement("span");
+        spinner.classList.add("spinner");
+        saveProductButton.textContent = "";
+        saveProductButton.appendChild(spinner);
+
+        try {
+          const { data, error } = await _supabase.storage
+            .from("product_images")
+            .upload(`${productImage.name}`, productImage);
+
+          let url = data.path;
+
+          if (error) {
+            console.error("Error al subir la imagen:", error.message);
+            return;
+          }
+
+          const { data: savedData, error: saveError } = await _supabase
+            .from("products")
+            .insert([
+              {
+                name: productName,
+                price: productPrice,
+                description: productDescription,
+                image_url: url
+              },
+            ])
+            .select();
+
+          if (saveError) {
+            console.error("Error al guardar el producto:", saveError.message);
+            return;
+          }
+
+          saveProductButton.textContent = "Guardar Producto";
+          saveProductButton.appendChild(spinner);
+
+          addProductDialog.close();
+          fetchProducts();
+        } catch (error) {
+          console.error("Error al guardar el producto:", error.message);
+          saveProductButton.textContent = "Guardar Producto";
+          saveProductButton.appendChild(spinner);
+        }
+      });
+    </script>
+  </body>
+</html>

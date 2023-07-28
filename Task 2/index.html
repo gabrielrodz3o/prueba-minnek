@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dogs</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .dog-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+
+        .dog-card {
+            width: 200px; 
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            text-align: center;
+            position: relative; 
+        }
+
+        .dog-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .sub-breeds {
+            display: none;
+            position: absolute;
+            
+            left: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+
+        .dog-card:hover .sub-breeds {
+            display: block;
+        }
+
+        .sub-breed {
+            display: block;
+            padding: 5px;
+            margin: 5px;
+            border: 1px solid #ccc;
+        }
+
+
+        .dog-card:hover .dog-image {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dog list</h1>
+    
+    <div class="dog-container" id="dog-container">
+  
+    </div>
+
+    <script>
+
+        const apiUrl = 'https://dog.ceo/api/breeds/list/all';
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+              
+                const dogContainer = document.getElementById('dog-container');
+
+                for (const breed in data.message) {
+                    const dogCard = document.createElement('div');
+                    dogCard.className = 'dog-card';
+
+                    const dogImage = document.createElement('img');
+                    dogImage.className = 'dog-image';
+
+          
+                    fetch(`https://dog.ceo/api/breed/${breed}/images/random`)
+                        .then(response => response.json())
+                        .then(imageData => {
+                            dogImage.src = imageData.message;
+                        })
+                        .catch(error => console.error('Error al obtener imagen de raza', error));
+
+                    const dogName = document.createElement('p');
+                    dogName.textContent = breed;
+              
+                    const subBreeds = data.message[breed];
+                    if (subBreeds.length > 0) {
+                        const subBreedsContainer = document.createElement('div');
+                        subBreedsContainer.className = 'sub-breeds';
+                        for (let i = 0; i < subBreeds.length; i++) {
+                            const subBreed = document.createElement('span');
+                            subBreed.className = 'sub-breed';
+                            subBreed.textContent = subBreeds[i];
+                            subBreedsContainer.appendChild(subBreed);
+                        }
+                        dogCard.appendChild(subBreedsContainer);
+                    }
+
+                    dogCard.appendChild(dogImage);
+                    dogCard.appendChild(dogName);
+                    dogContainer.appendChild(dogCard);
+                }
+            })
+            .catch(error => console.error('Error', error));
+    </script>
+</body>
+</html>
